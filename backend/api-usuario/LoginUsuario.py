@@ -54,6 +54,8 @@ def lambda_handler(event, context):
         'body': json.dumps({
             'message': 'Login exitoso',
             'token': token,
-            'expires': fecha_hora_exp.strftime('%Y-%m-%d %H:%M:%S')
+            'expires': fecha_hora_exp.strftime('%Y-%m-%d %H:%M:%S'),
+            'user_id': user_id,
+            'tenant_id': tenant_id
         })
     }
