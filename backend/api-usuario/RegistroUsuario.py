@@ -6,6 +6,12 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def lambda_handler(event, context):
+    cors_headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Methods': 'OPTIONS,POST'
+    }
+
     try:
         body = json.loads(event['body'])
 
@@ -14,7 +20,7 @@ def lambda_handler(event, context):
         password = body['password']
 
         dynamodb = boto3.resource('dynamodb')
-        t_usuarios = dynamodb.Table('t_usuarios2')  
+        t_usuarios = dynamodb.Table('t_usuarios2')
 
         response = t_usuarios.get_item(Key={
             'tenant_id': tenant_id,
@@ -24,6 +30,7 @@ def lambda_handler(event, context):
         if 'Item' in response:
             return {
                 'statusCode': 409,
+                'headers': cors_headers,
                 'body': json.dumps({
                     'error': 'El usuario ya existe en este tenant'
                 })
@@ -40,6 +47,7 @@ def lambda_handler(event, context):
 
         return {
             'statusCode': 201,
+            'headers': cors_headers,
             'body': json.dumps({
                 'message': 'Usuario registrado exitosamente',
                 'tenant_id': tenant_id,
@@ -51,5 +59,6 @@ def lambda_handler(event, context):
         print("ERROR:", str(e))
         return {
             'statusCode': 500,
+            'headers': cors_headers,
             'body': json.dumps({ "error": str(e) })
         }

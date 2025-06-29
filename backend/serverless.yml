@@ -7,7 +7,7 @@ provider:
   runtime: python3.13
   timeout: 30
   iam:
-    role: arn:aws:iam::104861753178:role/LabRole
+    role: arn:aws:iam::910414521227:role/LabRole
   environment:
     TABLE_USUARIOS: t_usuarios2
     TABLE_TOKENS: t_tokens_acceso1

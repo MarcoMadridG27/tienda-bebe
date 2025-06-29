@@ -4,6 +4,12 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 def lambda_handler(event, context):
+    cors_headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Methods': 'OPTIONS,POST'
+    }
+
     try:
         # Leer token desde el header o body
         if 'headers' in event and 'Authorization' in event['headers']:
@@ -15,6 +21,7 @@ def lambda_handler(event, context):
         if not token:
             return {
                 'statusCode': 400,
+                'headers': cors_headers,
                 'body': json.dumps({'error': 'Token no proporcionado'})
             }
 
@@ -26,6 +33,7 @@ def lambda_handler(event, context):
         if 'Item' not in response:
             return {
                 'statusCode': 403,
+                'headers': cors_headers,
                 'body': json.dumps({'error': 'Token inválido o no encontrado'})
             }
 
@@ -37,11 +45,13 @@ def lambda_handler(event, context):
         if now > expires_dt:
             return {
                 'statusCode': 403,
+                'headers': cors_headers,
                 'body': json.dumps({'error': 'Token expirado'})
             }
 
         return {
             'statusCode': 200,
+            'headers': cors_headers,
             'body': json.dumps({
                 'message': 'Token válido',
                 'tenant_id': item['tenant_id'],
@@ -53,5 +63,6 @@ def lambda_handler(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
+            'headers': cors_headers,
             'body': json.dumps({'error': str(e)})
         }
