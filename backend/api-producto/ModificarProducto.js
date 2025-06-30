@@ -4,13 +4,28 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = 't_productos1';
 
 exports.handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*', // En producción cambia a tu dominio
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+
   try {
+    if (event.httpMethod === 'OPTIONS') {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ message: 'Preflight OK' })
+      };
+    }
+
     const { producto_id, producto_datos } = JSON.parse(event.body || '{}');
     const token = event.headers.Authorization || event.headers.authorization;
 
     if (!token) {
       return {
         statusCode: 403,
+        headers,
         body: JSON.stringify({ error: 'Token no proporcionado' })
       };
     }
@@ -18,6 +33,7 @@ exports.handler = async (event) => {
     if (!producto_id || !producto_datos || typeof producto_datos !== 'object') {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ error: 'Faltan datos obligatorios o formato incorrecto' })
       };
     }
@@ -34,6 +50,7 @@ exports.handler = async (event) => {
     if (!validation.body) {
       return {
         statusCode: 500,
+        headers,
         body: JSON.stringify({ error: 'Respuesta inválida de ValidarTokenUsuario' })
       };
     }
@@ -44,14 +61,15 @@ exports.handler = async (event) => {
     } catch (e) {
       return {
         statusCode: 500,
+        headers,
         body: JSON.stringify({ error: 'Respuesta de validación no es JSON válido' })
       };
     }
 
-
     if (validation.statusCode === 403 || data.rol !== 'admin') {
       return {
         statusCode: 403,
+        headers,
         body: JSON.stringify({ error: 'No autorizado: solo administradores pueden modificar productos' })
       };
     }
@@ -66,6 +84,7 @@ exports.handler = async (event) => {
     if (!item) {
       return {
         statusCode: 404,
+        headers,
         body: JSON.stringify({ error: 'Producto no encontrado' })
       };
     }
@@ -89,6 +108,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({
         message: 'Producto modificado exitosamente',
         datosActualizados: updateResult.Attributes
@@ -99,6 +119,7 @@ exports.handler = async (event) => {
     console.error('ERROR en ModificarProducto:', err);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ error: err.message || 'Error interno del servidor' })
     };
   }

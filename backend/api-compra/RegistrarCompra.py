@@ -5,6 +5,12 @@ from datetime import datetime
 from decimal import Decimal
 
 def lambda_handler(event, context):
+    headers = {
+        'Access-Control-Allow-Origin': '*',  # Cambiar * por un dominio específico en producción
+        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    }
+
     try:
         print("Evento recibido:", event)
         body = json.loads(event['body'])
@@ -13,8 +19,10 @@ def lambda_handler(event, context):
         if not token:
             return {
                 'statusCode': 401,
+                'headers': headers,
                 'body': json.dumps({ 'error': 'Token no proporcionado' })
             }
+
         lambda_client = boto3.client('lambda')
         payload = json.dumps({ "token": token })
         response = lambda_client.invoke(
@@ -27,11 +35,14 @@ def lambda_handler(event, context):
         if validation['statusCode'] == 403:
             return {
                 'statusCode': 403,
+                'headers': headers,
                 'body': json.dumps({ 'error': 'Token inválido' })
             }
+
         user_data = json.loads(validation['body'])
         tenant_id = user_data['tenant_id']
         user_id = user_data['user_id']
+
         productos = [
             {
                 **p,
@@ -40,6 +51,7 @@ def lambda_handler(event, context):
             }
             for p in body.get('productos', [])
         ]
+
         total = sum(p["precio"] * p["cantidad"] for p in productos)
         compra = {
             'tenant_id': tenant_id,
@@ -49,17 +61,20 @@ def lambda_handler(event, context):
             'total': total,
             'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
+
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table('t_compras1')
         table.put_item(Item=compra)
 
         return {
             'statusCode': 201,
+            'headers': headers,
             'body': json.dumps({ 'message': 'Compra registrada', 'compra': compra }, default=str)
         }
 
     except Exception as e:
         return {
             'statusCode': 500,
+            'headers': headers,
             'body': json.dumps({ 'error': str(e) })
         }

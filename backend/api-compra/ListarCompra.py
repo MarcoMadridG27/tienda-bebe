@@ -3,6 +3,12 @@ import json
 from boto3.dynamodb.conditions import Key
 
 def lambda_handler(event, context):
+    headers = {
+        'Access-Control-Allow-Origin': '*',  # Cambia * por un dominio específico en producción
+        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+    }
+
     try:
         print("Evento recibido:", event)
         token = event['headers'].get('Authorization')
@@ -10,8 +16,10 @@ def lambda_handler(event, context):
         if not token:
             return {
                 'statusCode': 401,
+                'headers': headers,
                 'body': json.dumps({ 'error': 'Token no proporcionado' })
             }
+
         lambda_client = boto3.client('lambda')
         payload = json.dumps({ "token": token })
         response = lambda_client.invoke(
@@ -24,8 +32,10 @@ def lambda_handler(event, context):
         if validation['statusCode'] == 403:
             return {
                 'statusCode': 403,
+                'headers': headers,
                 'body': json.dumps({ 'error': 'Token inválido' })
             }
+
         user_data = json.loads(validation['body'])
         tenant_id = user_data['tenant_id']
         user_id = user_data['user_id']
@@ -39,6 +49,7 @@ def lambda_handler(event, context):
 
         return {
             'statusCode': 200,
+            'headers': headers,
             'body': json.dumps({
                 'compras': result.get('Items', []),
                 'cantidad': result.get('Count', 0)
@@ -48,5 +59,6 @@ def lambda_handler(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
+            'headers': headers,
             'body': json.dumps({ 'error': str(e) })
         }

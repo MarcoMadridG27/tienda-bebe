@@ -4,6 +4,12 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = 't_productos1';
 
 exports.handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*', // Cámbialo por tu dominio en producción si es necesario
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+
   try {
     const { producto_id } = JSON.parse(event.body || '{}');
     const token = event.headers.Authorization || event.headers.authorization;
@@ -11,6 +17,7 @@ exports.handler = async (event) => {
     if (!token) {
       return {
         statusCode: 403,
+        headers,
         body: JSON.stringify({ error: 'Token no proporcionado' })
       };
     }
@@ -18,9 +25,11 @@ exports.handler = async (event) => {
     if (!producto_id) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ error: 'Falta producto_id' })
       };
     }
+
     const tokenResult = await lambda.invoke({
       FunctionName: 'api-bebes-dev-validarUsuario',
       InvocationType: 'RequestResponse',
@@ -32,6 +41,7 @@ exports.handler = async (event) => {
     if (!validation.body) {
       return {
         statusCode: 500,
+        headers,
         body: JSON.stringify({ error: 'Respuesta inválida de ValidarTokenUsuario' })
       };
     }
@@ -41,6 +51,7 @@ exports.handler = async (event) => {
     if (validation.statusCode === 403 || data.rol !== 'admin') {
       return {
         statusCode: 403,
+        headers,
         body: JSON.stringify({ error: 'No autorizado: solo administradores pueden eliminar productos' })
       };
     }
@@ -55,6 +66,7 @@ exports.handler = async (event) => {
     if (!item) {
       return {
         statusCode: 404,
+        headers,
         body: JSON.stringify({ error: 'Producto no encontrado' })
       };
     }
@@ -69,6 +81,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({ message: 'Producto eliminado exitosamente' })
     };
 
@@ -76,6 +89,7 @@ exports.handler = async (event) => {
     console.error('ERROR en EliminarProducto:', err);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ error: err.message || 'Error interno del servidor' })
     };
   }

@@ -4,9 +4,15 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = 't_productos1';
 
 exports.handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*', // Puedes cambiar * por tu dominio en producción
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+
   try {
     const body = JSON.parse(event.body);
-    const token = event.headers.Authorization;
+    const token = event.headers.Authorization || event.headers.authorization;
 
     const tokenResult = await lambda.invoke({
       FunctionName: 'api-bebes-dev-validarUsuario',
@@ -19,6 +25,7 @@ exports.handler = async (event) => {
     if (!validation.body || validation.statusCode === 403) {
       return {
         statusCode: 403,
+        headers,
         body: JSON.stringify({ error: 'Token inválido' })
       };
     }
@@ -38,6 +45,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({
         productos: response.Items,
         lastEvaluatedKey: response.LastEvaluatedKey || null
@@ -48,6 +56,7 @@ exports.handler = async (event) => {
     console.error('ERROR en ListarProducto:', err);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ error: err.message })
     };
   }

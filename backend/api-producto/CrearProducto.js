@@ -4,13 +4,20 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = 't_productos1';
 
 exports.handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*', // Cambia '*' por tu dominio en producción
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+
   try {
     const producto = JSON.parse(event.body);
-    const token = event.headers.Authorization;
+    const token = event.headers.Authorization || event.headers.authorization;
 
     if (!token) {
       return {
         statusCode: 403,
+        headers,
         body: JSON.stringify({ error: 'Token no proporcionado' })
       };
     }
@@ -21,15 +28,14 @@ exports.handler = async (event) => {
       Payload: JSON.stringify({ token })
     }).promise();
 
-
     console.log('tokenResult.Payload:', tokenResult.Payload);
 
     const validation = JSON.parse(tokenResult.Payload);
 
-
     if (!validation.body) {
       return {
         statusCode: 500,
+        headers,
         body: JSON.stringify({ error: 'Respuesta inválida de ValidarTokenUsuario' })
       };
     }
@@ -42,6 +48,7 @@ exports.handler = async (event) => {
       console.error('Error al parsear validation.body:', validation.body);
       return {
         statusCode: 500,
+        headers,
         body: JSON.stringify({ error: 'Respuesta de validación no es JSON válido' })
       };
     }
@@ -49,11 +56,13 @@ exports.handler = async (event) => {
     if (validation.statusCode === 403 || data.rol !== 'admin') {
       return {
         statusCode: 403,
+        headers,
         body: JSON.stringify({ error: 'No autorizado: solo administradores pueden crear productos' })
       };
     }
 
-    producto.tenant_id = data.tenant_id; 
+    producto.tenant_id = data.tenant_id;
+
     await dynamodb.put({
       TableName: TABLE_NAME,
       Item: producto
@@ -61,6 +70,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 201,
+      headers,
       body: JSON.stringify({ message: 'Producto creado exitosamente' })
     };
 
@@ -68,6 +78,7 @@ exports.handler = async (event) => {
     console.error('ERROR en CrearProducto:', err);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ error: err.message || 'Error interno del servidor' })
     };
   }
