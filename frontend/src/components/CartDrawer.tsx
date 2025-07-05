@@ -24,7 +24,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
         try {
             setLoading(true);
             await registrarCompra(cart);
-            alert("✅ Compra registrada exitosamente");
+            alert(" Compra registrada exitosamente");
             clearCart();
             onClose();
         } catch (error: any) {

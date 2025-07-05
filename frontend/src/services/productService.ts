@@ -1,7 +1,7 @@
 import { Product } from '../types/Product';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { API_BASE } from './api';
 
 export const useProductService = () => {
     const { token, tenantId } = useAuth();
@@ -17,7 +17,7 @@ export const useProductService = () => {
         const response = await fetch(`${API_BASE}/producto/crear`, {
             method: 'POST',
             headers: authHeaders(),
-            body: JSON.stringify({ tenant_id: tenantId, ...producto }),
+            body: JSON.stringify({ tenant_id: tenantId, producto }),
         });
 
         const data = await response.json();

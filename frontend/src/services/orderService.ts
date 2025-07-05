@@ -1,6 +1,6 @@
 import { CartItem } from "../contexts/CartContext";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import { API_BASE } from './api';
 
 export const registrarCompra = async (productos: CartItem[]) => {
     const token = localStorage.getItem("token");
