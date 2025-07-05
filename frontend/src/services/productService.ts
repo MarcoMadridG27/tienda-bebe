@@ -1,30 +1,101 @@
 import { Product } from '../types/Product';
+import { useAuth } from '../contexts/AuthContext';
 
-const API_BASE = 'https://nwt4qfsse9.execute-api.us-east-1.amazonaws.com/dev';
+const API_BASE = import.meta.env.VITE_API_BASE;
 
-export const getProducts = async (): Promise<Product[]> => {
-  // Arma la petición
-  const res = await fetch(`${API_BASE}/producto/listar`, {
-    method: 'POST', // según tu Lambda solo acepta POST
-    headers: {
-      'Content-Type': 'application/json',
-      // Si tu API requiere autenticación, descomenta y ajusta:
-      // 'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({}), // envía un cuerpo vacío para usar el limit por defecto
-  });
+export const useProductService = () => {
+    const { token, tenantId } = useAuth();
 
-  // Verifica errores HTTP
-  if (!res.ok) {
-    throw new Error(`Error al listar productos: ${res.status} ${res.statusText}`);
-  }
+    const authHeaders = () => ({
+        'Content-Type': 'application/json',
+        'Authorization': token || '',
+    });
 
-  // Parsea la respuesta
-  const payload = await res.json() as {
-    productos: Product[];
-    lastEvaluatedKey?: any;
-  };
+    const crearProducto = async (producto: Omit<Product, 'id' | 'tenant_id'>): Promise<any> => {
+        if (!token || !tenantId) throw new Error('No autenticado');
 
-  // Devuelve el arreglo de productos
-  return payload.productos;
+        const response = await fetch(`${API_BASE}/producto/crear`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ tenant_id: tenantId, ...producto }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al crear el producto');
+        return data;
+    };
+
+    const getProducts = async (filtros?: any): Promise<Product[]> => {
+        if (!token || !tenantId) throw new Error('No autenticado');
+
+        const response = await fetch(`${API_BASE}/producto/listar`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ tenant_id: tenantId, filtros }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al obtener productos');
+        return data.productos || [];
+    };
+
+    const buscarProducto = async (nombre: string): Promise<Product[]> => {
+        if (!token || !tenantId) throw new Error('No autenticado');
+
+        const response = await fetch(`${API_BASE}/producto/buscar`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ tenant_id: tenantId, nombre }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al buscar producto');
+        return data.resultado || [];
+    };
+
+    const modificarProducto = async (producto: Product): Promise<any> => {
+        if (!token) throw new Error('No autenticado');
+
+        const response = await fetch(`${API_BASE}/producto/modificar`, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({
+                producto_id: producto.producto_id,
+                producto_datos: {
+                    nombre: producto.nombre,
+                    descripcion: producto.descripcion,
+                    precio: producto.precio,
+                    categoria_id: producto.categoria_id,
+                    stock: producto.stock
+                }
+            }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al modificar producto');
+        return data;
+    };
+
+    const eliminarProducto = async (id: string): Promise<any> => {
+        if (!token) throw new Error('No autenticado');
+
+        const response = await fetch(`${API_BASE}/producto/eliminar`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+            body: JSON.stringify({ producto_id: id }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al eliminar producto');
+        return data;
+    };
+
+
+    return {
+        crearProducto,
+        getProducts,
+        buscarProducto,
+        modificarProducto,
+        eliminarProducto,
+    };
 };

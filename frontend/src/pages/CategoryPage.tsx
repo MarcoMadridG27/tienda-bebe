@@ -1,15 +1,17 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getProducts } from '../services/productService';
 import { Product } from '../types/Product';
 import Navbar from '../components/Navbar';
 import CategoryBar from '../components/CategoryBar';
 import ProductList from '../components/ProductList';
 import Footer from '../components/Footer';
 import CategoryFilter from '../components/CategoryFilter';
+import { useProductService } from '../services/productService'; // ✅ usa el hook correcto
 
 const CategoryPage = () => {
     const { categoryName } = useParams();
+    const { getProducts } = useProductService(); // ✅ usa el método con tenant
+
     const [products, setProducts] = useState<Product[]>([]);
     const [filtered, setFiltered] = useState<Product[]>([]);
 
@@ -27,10 +29,11 @@ const CategoryPage = () => {
     });
 
     useEffect(() => {
-        getProducts().then(setProducts);
+        getProducts()
+            .then(setProducts)
+            .catch((err) => console.error("Error al obtener productos:", err));
     }, []);
 
-    // Aplicar filtros y actualizar conteos por categoría
     useEffect(() => {
         const filteredByCategory = products.filter(p =>
             p.category?.toLowerCase() === categoryName?.toLowerCase()

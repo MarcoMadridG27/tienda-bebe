@@ -1,5 +1,7 @@
 import { useCart } from "../contexts/CartContext";
 import { FiX } from "react-icons/fi";
+import { registrarCompra } from "../services/orderService";
+import { useState } from "react";
 
 interface CartDrawerProps {
     isOpen: boolean;
@@ -7,13 +9,31 @@ interface CartDrawerProps {
 }
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
-    const { cart, updateQuantity, removeFromCart } = useCart();
+    const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+    const [loading, setLoading] = useState(false);
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const formatPrice = (price: number) => `S/ ${price.toFixed(2)}`;
     const oldPrice = (price: number) => `S/ ${(price * 1.43).toFixed(2)}`;
     const shorten = (text: string, max: number) =>
         text.length > max ? text.slice(0, max) + "..." : text;
+
+    const handleRegistrarCompra = async () => {
+        if (cart.length === 0 || loading) return;
+
+        try {
+            setLoading(true);
+            await registrarCompra(cart);
+            alert("✅ Compra registrada exitosamente");
+            clearCart();
+            onClose();
+        } catch (error: any) {
+            console.error(error);
+            alert(error.message || "❌ Error al registrar la compra");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div
@@ -40,7 +60,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                     cart.map((item) => (
                         <div key={item.id} className="flex items-center justify-between border-b pb-3 gap-3 border-graylight">
                             <img
-                                src={item.image || "/placeholder.jpg"}
+                                src={item.imageUrl || "/placeholder.jpg"}
                                 alt={item.name}
                                 className="w-16 h-16 object-cover rounded-md bg-graylight"
                             />
@@ -90,7 +110,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                 </div>
             </div>
 
-            {/* Totales */}
+            {/* Totales y botón de compra */}
             <div className="px-5 py-4 border-t border-graylight bg-white">
                 <div className="flex justify-between text-sm text-graylight mb-1">
                     <span>Total parcial</span>
@@ -100,8 +120,12 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                     <span>Total:</span>
                     <span>{formatPrice(total)}</span>
                 </div>
-                <button className="w-full bg-pink hover:bg-[#ec9db5] text-white py-2 rounded-full font-semibold text-sm flex items-center justify-center gap-2 transition">
-                    Ver carrito
+                <button
+                    onClick={handleRegistrarCompra}
+                    disabled={cart.length === 0 || loading}
+                    className="w-full bg-pink hover:bg-[#ec9db5] text-white py-2 rounded-full font-semibold text-sm flex items-center justify-center gap-2 transition disabled:opacity-50"
+                >
+                    {loading ? "Procesando..." : "Finalizar compra"}
                     <img src="/whatsapp-icon.png" alt="whatsapp" className="w-5 h-5" />
                 </button>
             </div>

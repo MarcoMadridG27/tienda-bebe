@@ -1,12 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthSlider from './pages/AuthSlider';
 import HomePage from './pages/HomePage';
+import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import CategoryPage from "./pages/CategoryPage.tsx";
 
 export default function App() {
     return (
         <BrowserRouter>
+            <AuthProvider>
             <CartProvider>
                 <Routes>
                     {/* Página principal con productos */}
@@ -21,6 +23,7 @@ export default function App() {
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
             </CartProvider>
+            </AuthProvider>
         </BrowserRouter>
     );
 }
