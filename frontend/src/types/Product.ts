@@ -8,5 +8,5 @@ export interface Product {
     gender?: string;
     type?: string;
     availability?: string;
-    category?: string;  // 👈 nuevo campo
+    category?: string;  //  nuevo campo
 }
