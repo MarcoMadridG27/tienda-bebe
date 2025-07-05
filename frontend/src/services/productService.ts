@@ -1,246 +1,101 @@
 import { Product } from '../types/Product';
+import { useAuth } from '../contexts/AuthContext';
 
-export const getProducts = async (): Promise<Product[]> => {
-    return [
-        {
-            id: '1',
-            name: 'Cojín Para Embarazada Premium',
-            description: 'Soporte ergonómico para descanso maternal',
-            price: 150.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '0 A 3 Meses',
-            gender: 'Unisex',
-            type: 'Cojín Para Embarazada',
-            availability: 'En Existencia',
-            category: 'embarazadas',
-        },
-        {
-            id: '2',
-            name: 'Biberón Anticólicos Avent',
-            description: 'Con válvula de ventilación avanzada',
-            price: 45.9,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '3 A 6 Meses',
-            gender: 'Niño',
-            type: 'Chupón',
-            availability: 'En Existencia',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '3',
-            name: 'Pack Mamá Power Rosado',
-            description: 'Incluye cojin, biberones y manta',
-            price: 695.76,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '9 A 12 Meses',
-            gender: 'Niña',
-            type: 'Accesorio De Alimentacion',
-            availability: 'En Existencia',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '4',
-            name: 'Extractor Eléctrico Medela Swing',
-            description: 'Silencioso y portátil',
-            price: 999.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '3 A 6 Meses',
-            gender: 'Unisex',
-            type: 'Accesorio De Alimentacion',
-            availability: 'Agotado',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '5',
-            name: 'Chupón Anatómico Azul',
-            description: 'De silicona y ergonómico',
-            price: 15.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '0 A 3 Meses',
-            gender: 'Niño',
-            type: 'Chupón',
-            availability: 'En Existencia',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '6',
-            name: 'Calentador de Biberones Rápido',
-            description: 'Compatible con varias marcas',
-            price: 89.5,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '3 A 6 Meses',
-            gender: 'Unisex',
-            type: 'Calentador',
-            availability: 'En Existencia',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '7',
-            name: 'Almohada De Lactancia Rosa',
-            description: 'Suave y firme para lactancia',
-            price: 120.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '0 A 3 Meses',
-            gender: 'Niña',
-            type: 'Almohada De Lactancia',
-            availability: 'En Existencia',
-            category: 'embarazadas',
-        },
-        {
-            id: '8',
-            name: 'Babero Impermeable Set x3',
-            description: 'Material antideslizante',
-            price: 29.9,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '3 A 6 Meses',
-            gender: 'Niño',
-            type: 'Babero',
-            availability: 'Agotado',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '9',
-            name: 'Cooler Bag para leche materna',
-            description: 'Bolso térmico con gel',
-            price: 75.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '0 A 3 Meses',
-            gender: 'Unisex',
-            type: 'Cooler Bag',
-            availability: 'En Existencia',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '10',
-            name: 'Cucharita de Entrenamiento',
-            description: 'Cuchara flexible para bebés',
-            price: 10.5,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '9 A 12 Meses',
-            gender: 'Niña',
-            type: 'Cuchara',
-            availability: 'En Existencia',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '11',
-            name: 'Set de Chupones Color Pastel',
-            description: 'Varios tamaños para recién nacidos',
-            price: 34.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '0 A 3 Meses',
-            gender: 'Unisex',
-            type: 'Chupón',
-            availability: 'En Existencia',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '12',
-            name: 'Cojín Lactancia Múltiple',
-            description: 'Ideal para gemelos',
-            price: 210.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '0 A 3 Meses',
-            gender: 'Unisex',
-            type: 'Cojín Para Embarazada',
-            availability: 'En Existencia',
-            category: 'embarazadas',
-        },
-        {
-            id: '13',
-            name: 'Cuna Colecho Blanca',
-            description: 'Segura, firme y ajustable',
-            price: 450.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '0 A 3 Meses',
-            gender: 'Unisex',
-            type: 'Accesorio Para Bebé',
-            availability: 'En Existencia',
-            category: 'colecho',
-        },
-        {
-            id: '14',
-            name: 'Faja Post Parto Alta Compresión',
-            description: 'Ajustable y respirable',
-            price: 85.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '9 A 12 Meses',
-            gender: 'Unisex',
-            type: 'Cojín Para Embarazada',
-            availability: 'Agotado',
-            category: 'embarazadas',
-        },
-        {
-            id: '15',
-            name: 'Paquete de Toallitas Húmedas',
-            description: 'Sin alcohol, suave con la piel',
-            price: 18.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '0 A 3 Meses',
-            gender: 'Unisex',
-            type: 'Higiene',
-            availability: 'En Existencia',
-            category: 'higiene',
-        },
-        {
-            id: '16',
-            name: 'Babero 100% algodón',
-            description: 'Reversible y lavable',
-            price: 12.5,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '3 A 6 Meses',
-            gender: 'Niña',
-            type: 'Babero',
-            availability: 'En Existencia',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '17',
-            name: 'Cepillo Dental de Silicona',
-            description: 'Primeros dientes',
-            price: 14.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '9 A 12 Meses',
-            gender: 'Niño',
-            type: 'Higiene',
-            availability: 'En Existencia',
-            category: 'higiene',
-        },
-        {
-            id: '18',
-            name: 'Bolso Organizador Rosado',
-            description: 'Para paseo y cambio de pañal',
-            price: 130.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '3 A 6 Meses',
-            gender: 'Niña',
-            type: 'Almacenadores',
-            availability: 'En Existencia',
-            category: 'paseo',
-        },
-        {
-            id: '19',
-            name: 'Biberón Mam 260ml',
-            description: 'Autosterilizable en microondas',
-            price: 37.9,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '3 A 6 Meses',
-            gender: 'Niño',
-            type: 'Chupón',
-            availability: 'En Existencia',
-            category: 'alimentacion-y-lactancia',
-        },
-        {
-            id: '20',
-            name: 'Juego Didáctico Sensorial',
-            description: 'Estimulación temprana',
-            price: 56.0,
-            imageUrl: 'https://via.placeholder.com/150',
-            age: '9 A 12 Meses',
-            gender: 'Unisex',
-            type: 'Juguetes',
-            availability: 'En Existencia',
-            category: 'juguetes',
-        }
-    ];
+const API_BASE = import.meta.env.VITE_API_BASE;
+
+export const useProductService = () => {
+    const { token, tenantId } = useAuth();
+
+    const authHeaders = () => ({
+        'Content-Type': 'application/json',
+        'Authorization': token || '',
+    });
+
+    const crearProducto = async (producto: Omit<Product, 'id' | 'tenant_id'>): Promise<any> => {
+        if (!token || !tenantId) throw new Error('No autenticado');
+
+        const response = await fetch(`${API_BASE}/producto/crear`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ tenant_id: tenantId, ...producto }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al crear el producto');
+        return data;
+    };
+
+    const getProducts = async (filtros?: any): Promise<Product[]> => {
+        if (!token || !tenantId) throw new Error('No autenticado');
+
+        const response = await fetch(`${API_BASE}/producto/listar`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ tenant_id: tenantId, filtros }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al obtener productos');
+        return data.productos || [];
+    };
+
+    const buscarProducto = async (nombre: string): Promise<Product[]> => {
+        if (!token || !tenantId) throw new Error('No autenticado');
+
+        const response = await fetch(`${API_BASE}/producto/buscar`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ tenant_id: tenantId, nombre }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al buscar producto');
+        return data.resultado || [];
+    };
+
+    const modificarProducto = async (producto: Product): Promise<any> => {
+        if (!token) throw new Error('No autenticado');
+
+        const response = await fetch(`${API_BASE}/producto/modificar`, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({
+                producto_id: producto.producto_id,
+                producto_datos: {
+                    nombre: producto.nombre,
+                    descripcion: producto.descripcion,
+                    precio: producto.precio,
+                    categoria_id: producto.categoria_id,
+                    stock: producto.stock
+                }
+            }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al modificar producto');
+        return data;
+    };
+
+    const eliminarProducto = async (id: string): Promise<any> => {
+        if (!token) throw new Error('No autenticado');
+
+        const response = await fetch(`${API_BASE}/producto/eliminar`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+            body: JSON.stringify({ producto_id: id }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al eliminar producto');
+        return data;
+    };
+
+
+    return {
+        crearProducto,
+        getProducts,
+        buscarProducto,
+        modificarProducto,
+        eliminarProducto,
+    };
 };
