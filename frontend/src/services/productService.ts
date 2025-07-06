@@ -2,7 +2,19 @@ import { Product } from '../types/Product';
 import { useAuth } from '../contexts/AuthContext';
 
 import { API_BASE } from './api';
-
+export interface ProductPayload {
+  tenant_id: string;
+  producto_id: string;
+  name: string;
+  description: string;
+  price: number;
+  category_id: string;
+  age: string;
+  gender: string;
+  type: string;
+  availability: string;
+  imageUrl: string;
+}
 export const useProductService = () => {
     const { token, tenantId } = useAuth();
 
@@ -10,20 +22,21 @@ export const useProductService = () => {
         'Content-Type': 'application/json',
         'Authorization': token || '',
     });
+    
 
-    const crearProducto = async (producto: Omit<Product, 'id' | 'tenant_id'>): Promise<any> => {
-        if (!token || !tenantId) throw new Error('No autenticado');
-
-        const response = await fetch(`${API_BASE}/producto/crear`, {
+    const crearProducto = async (payload: ProductPayload,token: string):
+     Promise<{ message: string; producto_id: string }> => {
+        const resp = await fetch(`${API_BASE}/producto/crear`, {
             method: 'POST',
-            headers: authHeaders(),
-            body: JSON.stringify({ tenant_id: tenantId, producto }),
+            headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
         });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Error al crear el producto');
-        return data;
-    };
+        if (!resp.ok) throw new Error(`Create product failed (${resp.status})`);
+        return resp.json();
+};
 
     const getProducts = async (filtros?: any): Promise<Product[]> => {
         if (!token || !tenantId) throw new Error('No autenticado');

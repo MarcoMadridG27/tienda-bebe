@@ -1,100 +1,75 @@
-// src/components/LoginForm.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { login } from '../services/authService';
 
-const LoginForm = () => {
-    const navigate = useNavigate();  // ← Importante
-    const { login } = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [tenantId, setTenantId] = useState('');
-    const [error, setError] = useState('');
+const LoginForm: React.FC = () => {
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      const { token, tenant_id } = await login(
+        import.meta.env.VITE_TENANT_ID || 'tenant3',
+        userId,
+        password
+      );
+      localStorage.setItem('token', token);
+      localStorage.setItem('tenant_id', tenant_id);
+      navigate('/');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Credenciales inválidas');
+    }
+  };
 
-        try {
-            const response = await fetch('https://3topw1rzbl.execute-api.us-east-1.amazonaws.com/dev/usuario/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    tenant_id: tenantId,
-                    user_id: email,
-                    password: password,
-                }),
-            });
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-semibold text-center mb-6">Iniciar Sesión</h2>
 
-            const data = await response.json();
-            if (response.ok) {
-                login(data.token, data.tenant_id);
-                navigate('/');  // ← Redirige al HomePage u otra ruta
-            } else {
-                setError(data.error || 'Error al iniciar sesión');
-            }
-        } catch (err) {
-            setError('Error del servidor');
-            console.error(err);
-        }
-    };
+        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
 
-    return (
-        <div className="w-full max-w-xs">
-            <h2 className="text-2xl font-bold mb-6 text-center text-pink">Iniciar Sesión</h2>
-            <form onSubmit={handleSubmit}>
-                {/* Tenant ID */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1 text-text">ID de tienda (tenant)</label>
-                    <input
-                        type="text"
-                        value={tenantId}
-                        onChange={(e) => setTenantId(e.target.value)}
-                        className="w-full px-4 py-2 border border-graylight rounded focus:outline-none focus:ring-2 focus:ring-pink"
-                        placeholder="ej: tenant7"
-                        required
-                    />
-                </div>
-
-                {/* Email */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1 text-text">Correo</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-2 border border-graylight rounded focus:outline-none focus:ring-2 focus:ring-pink"
-                        placeholder="correo@ejemplo.com"
-                        required
-                    />
-                </div>
-
-                {/* Password */}
-                <div className="mb-6">
-                    <label className="block text-sm font-medium mb-1 text-text">Contraseña</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-2 border border-graylight rounded focus:outline-none focus:ring-2 focus:ring-pink"
-                        placeholder="********"
-                        required
-                    />
-                </div>
-
-                {error && <p className="text-red-600 mb-4 text-sm text-center">{error}</p>}
-
-                <button
-                    type="submit"
-                    className="w-full bg-pink text-white py-2 rounded hover:bg-mint transition"
-                >
-                    Ingresar
-                </button>
-            </form>
+        <div className="form-control mb-4">
+          <label className="label">
+            <span className="label-text">Usuario</span>
+          </label>
+          <input
+            type="text"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            required
+            className="input input-bordered w-full"
+            placeholder="Ingresa tu usuario"
+          />
         </div>
-    );
+
+        <div className="form-control mb-6">
+          <label className="label">
+            <span className="label-text">Contraseña</span>
+          </label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="input input-bordered w-full"
+            placeholder="Contraseña"
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="btn btn-primary w-full"
+        >
+          Entrar
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default LoginForm;

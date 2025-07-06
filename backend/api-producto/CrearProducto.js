@@ -4,6 +4,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = 't_productos1';
 
 exports.handler = async (event) => {
+
   const headers = {
     'Access-Control-Allow-Origin': '*', // Cambia '*' por tu dominio en producción
     'Access-Control-Allow-Headers': '*',
@@ -12,7 +13,8 @@ exports.handler = async (event) => {
 
   try {
     const producto = JSON.parse(event.body);
-    const token = event.headers.Authorization || event.headers.authorization;
+    const rawAuth = event.headers.Authorization || event.headers.authorization || '';
+    const token = rawAuth.replace(/^Bearer\s+/i, '');
 
     if (!token) {
       return {
@@ -21,6 +23,8 @@ exports.handler = async (event) => {
         body: JSON.stringify({ error: 'Token no proporcionado' })
       };
     }
+
+
 
     const tokenResult = await lambda.invoke({
       FunctionName: 'api-bebes-dev-validarUsuario',
