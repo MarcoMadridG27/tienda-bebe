@@ -1,89 +1,115 @@
+// api-producto/CrearProducto.js
+
+// Requiere aws-sdk v2 (instálalo con `npm install aws-sdk`)
 const AWS = require('aws-sdk');
-const lambda = new AWS.Lambda();
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-const TABLE_NAME = 't_productos1';
+const ddb = new AWS.DynamoDB.DocumentClient();
+
+// Nombre de la tabla, definido en serverless.yml como TABLE_PRODUCTOS
+const TABLE_NAME = process.env.TABLE_PRODUCTOS;
 
 exports.handler = async (event) => {
+  console.log('🚀 Event recibido:', JSON.stringify(event));
 
-  const headers = {
-    'Access-Control-Allow-Origin': '*', // Cambia '*' por tu dominio en producción
-    'Access-Control-Allow-Headers': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS'
-  };
+  // 1) Obtener cabeceras (mayúsculas/minúsculas)
+  const headers = event.headers || {};
+  const rawAuth = headers.Authorization || headers.authorization || '';
+  console.log('🔑 raw Authorization header:', rawAuth);
+
+  // 2) Extraer token del formato "Bearer <token>"
+  let token = rawAuth;
+  if (rawAuth.toLowerCase().startsWith('bearer ')) {
+    token = rawAuth.slice(7);
+  }
+  console.log('🔒 Token extraído:', token);
+
+  // 3) Si no hay token, rechazamos
+  if (!token) {
+    return {
+      statusCode: 401,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ message: 'Unauthorized: faltó token' }),
+    };
+  }
+
+  // 4) Parsear body JSON
+  let body;
+  try {
+    body = JSON.parse(event.body);
+  } catch (err) {
+    console.error('❌ Error parseando body:', err);
+    return {
+      statusCode: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ message: 'Invalid JSON body' }),
+    };
+  }
+
+  // 5) Extraer campos del payload
+  const {
+    tenant_id,
+    producto_id,
+    name,
+    description,
+    price,
+    category_id,
+    age,
+    gender,
+    type,
+    availability,
+    imageUrl,
+  } = body;
+
+  // 6) Validaciones mínimas
+  if (!tenant_id || !producto_id || !name || price == null) {
+    return {
+      statusCode: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ message: 'Missing required fields' }),
+    };
+  }
 
   try {
-    const producto = JSON.parse(event.body);
-    const rawAuth = event.headers.Authorization || event.headers.authorization || '';
-    const token = rawAuth.replace(/^Bearer\s+/i, '');
+    // Aquí podrías invocar tu lambda ValidarTokenUsuario o cualquier lógica de autorización:
+    // await validarToken(token);
 
-    if (!token) {
-      return {
-        statusCode: 403,
-        headers,
-        body: JSON.stringify({ error: 'Token no proporcionado' })
-      };
-    }
-
-
-
-    const tokenResult = await lambda.invoke({
-      FunctionName: 'api-bebes-dev-validarUsuario',
-      InvocationType: 'RequestResponse',
-      Payload: JSON.stringify({ token })
-    }).promise();
-
-    console.log('tokenResult.Payload:', tokenResult.Payload);
-
-    const validation = JSON.parse(tokenResult.Payload);
-
-    if (!validation.body) {
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: 'Respuesta inválida de ValidarTokenUsuario' })
-      };
-    }
-
-    let data;
-    try {
-      data = JSON.parse(validation.body);
-      console.log('Parsed data from validation.body:', data);
-    } catch (e) {
-      console.error('Error al parsear validation.body:', validation.body);
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: 'Respuesta de validación no es JSON válido' })
-      };
-    }
-
-    if (validation.statusCode === 403 || data.rol !== 'admin') {
-      return {
-        statusCode: 403,
-        headers,
-        body: JSON.stringify({ error: 'No autorizado: solo administradores pueden crear productos' })
-      };
-    }
-
-    producto.tenant_id = data.tenant_id;
-
-    await dynamodb.put({
-      TableName: TABLE_NAME,
-      Item: producto
-    }).promise();
-
-    return {
-      statusCode: 201,
-      headers,
-      body: JSON.stringify({ message: 'Producto creado exitosamente' })
+    // 7) Insertar en DynamoDB
+    const item = {
+      tenant_id,
+      producto_id,
+      name,
+      description,
+      price,
+      category_id,
+      age,
+      gender,
+      type,
+      availability,
+      imageUrl,
+      createdAt: new Date().toISOString(),
     };
 
+    await ddb
+      .put({
+        TableName: TABLE_NAME,
+        Item: item,
+      })
+      .promise();
+
+    // 8) Responder éxito
+    return {
+      statusCode: 200,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({
+        message: 'Producto creado exitosamente',
+        producto_id,
+      }),
+    };
   } catch (err) {
-    console.error('ERROR en CrearProducto:', err);
+    console.error('❌ Error en CreateProducto:', err);
     return {
       statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: err.message || 'Error interno del servidor' })
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ message: err.message || 'Internal Server Error' }),
     };
   }
 };
