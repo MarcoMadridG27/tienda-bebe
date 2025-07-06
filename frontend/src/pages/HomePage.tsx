@@ -1,93 +1,76 @@
-import { useEffect, useState } from "react";
-import ProductList from "../components/ProductList";
-import { useProductService } from "../services/productService";
-import { Product } from "../types/Product";
-import CategoryBar from "../components/CategoryBar";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer.tsx";
-import { useCart } from "../contexts/CartContext";
-import ImageCarousel from "../components/ImageCarousel.tsx";
+import React, { useEffect, useState } from 'react'
+import Navbar from '../components/Navbar'
+import CategoryBar from '../components/CategoryBar'
+import ImageCarousel from '../components/ImageCarousel'
+import ProductList from '../components/ProductList'
+import Footer from '../components/Footer'
+import { useProductService } from '../services/productService'
+import type { Product } from '../types/Product'
+import { useCart } from '../contexts/CartContext'
 
-const HomePage = () => {
-    const { addToCart } = useCart();
-    const { getProducts } = useProductService();
+const HomePage: React.FC = () => {
+  const { getProducts } = useProductService()
+  const { addToCart } = useCart()
 
-    const [products, setProducts] = useState<Product[]>([]);
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>("");
+  const [products, setProducts] = useState<Product[]>([])
+  const [filtered, setFiltered] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-    useEffect(() => {
-        let mounted = true;
-        setLoading(true);
-        console.log("🔍 Llamando getProducts...");
-        getProducts()
-            .then((data) => {
-                console.log("✅ Productos recibidos:", data);
-                if (mounted) {
-                    setProducts(data);
-                    setFilteredProducts(data);
-                    setLoading(false);
-                }
-            })
-            .catch((err) => {
-                console.error("❌ Error en getProducts:", err);
-                setError("No se pudieron cargar los productos");
-                setLoading(false);
-            });
+  // Carga UNA sola vez al montar
+  useEffect(() => {
+    let m = true
+    getProducts()
+      .then(data => {
+        if (!m) return
+        setProducts(data)
+        setFiltered(data)
+      })
+      .catch(() => {
+        if (m) setError('No se pudieron cargar los productos')
+      })
+      .finally(() => {
+        if (m) setLoading(false)
+      })
+    return () => {
+      m = false
+    }
+  }, [])
 
-        return () => {
-            mounted = false;
-        };
-    }, [getProducts]);
+  // Filtrado al teclear en Navbar
+  const handleSearch = (q: string) => {
+    if (!q.trim()) return setFiltered(products)
+    const low = q.toLowerCase()
+    setFiltered(products.filter(p => p.nombre.toLowerCase().includes(low)))
+  }
 
+  return (
+    <>
+      {/* Aquí va el Navbar con sugerencias y onSearch */}
+      <Navbar
+        suggestions={products.map(p => p.nombre)}
+        onSearch={handleSearch}
+      />
 
-    const handleAddToCart = (product: Product) => {
-        addToCart(product);
-    };
+      <CategoryBar />
 
-    const handleSearch = (query: string) => {
-        if (!query.trim()) {
-            setFilteredProducts(products);
-            return;
-        }
+      <div className="w-full">
+        <ImageCarousel />
+      </div>
 
-        const lowerQuery = query.toLowerCase();
-        const result = products.filter((p) =>
-            p.nombre.toLowerCase().includes(lowerQuery) // 👈 corregido: p.nombre en lugar de p.name
-        );
+      <div className="max-w-7xl mx-auto py-10 px-4">
+        {loading && (
+          <p className="text-center text-gray-400">Cargando productos…</p>
+        )}
+        {error && <p className="text-center text-red-500">{error}</p>}
+        {!loading && !error && (
+          <ProductList products={filtered} onAddToCart={addToCart} />
+        )}
+      </div>
 
-        setFilteredProducts(result);
-    };
+      <Footer />
+    </>
+  )
+}
 
-    return (
-        <>
-            <Navbar
-                suggestions={products.map((p) => p.nombre)} // 👈 corregido: p.nombre
-                onSearch={handleSearch}
-            />
-
-            <CategoryBar />
-
-            <div className="w-full">
-                <ImageCarousel />
-            </div>
-
-            <div className="max-w-7xl mx-auto py-10 px-4">
-                {loading && <p className="text-center text-gray-400">Cargando productos...</p>}
-                {error && <p className="text-center text-red-500">{error}</p>}
-
-                {!loading && !error && (
-                    <ProductList
-                        products={filteredProducts}
-                        onAddToCart={handleAddToCart}
-                    />
-                )}
-            </div>
-
-            <Footer />
-        </>
-    );
-};
-
-export default HomePage;
+export default HomePage

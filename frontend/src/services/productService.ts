@@ -38,19 +38,38 @@ export const useProductService = () => {
         return resp.json();
 };
 
-    const getProducts = async (filtros?: any): Promise<Product[]> => {
-        if (!token || !tenantId) throw new Error('No autenticado');
+    const getProducts = async (): Promise<Product[]> => {
+    if (!token || !tenantId) throw new Error('No autenticado')
 
-        const response = await fetch(`${API_BASE}/producto/listar`, {
-            method: 'POST',
-            headers: authHeaders(),
-            body: JSON.stringify({ tenant_id: tenantId, filtros }),
-        });
+    const resp = await fetch(`${API_BASE}/producto/listar`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization:   `Bearer ${token}`,
+      },
+      body: JSON.stringify({ tenant_id: tenantId }),
+    })
+    if (!resp.ok) {
+      const err = await resp.text()
+      throw new Error(err || `Error ${resp.status}`)
+    }
+    const data = await resp.json()
+    const raw: any[] = data.productos || []
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Error al obtener productos');
-        return data.productos || [];
-    };
+    return raw.map(item => ({
+      producto_id:    item.producto_id,
+      tenant_id:      item.tenant_id,
+      nombre:         item.name        || item.nombre        || 'Sin nombre',
+      descripcion:    item.description || item.descripcion || '',
+      precio:         Number(item.price ?? item.precio ?? 0),
+      categoria_id:   item.category_id || item.categoria_id || '',
+      edad:           item.age         || item.edad         || '',
+      genero:         item.gender      || item.genero      || '',
+      tipo:           item.type        || item.tipo        || '',
+      disponibilidad: item.availability|| item.disponibilidad|| 'Desconocido',
+      imageUrl:       item.imageUrl    || '/placeholder.png',
+    }))
+  }
 
     const buscarProducto = async (nombre: string): Promise<Product[]> => {
         if (!token || !tenantId) throw new Error('No autenticado');
