@@ -8,13 +8,13 @@ export interface AuthResponse {
 
 export async function signUp(
   tenant_id: string,
-  user_id: string,
+  email: string,
   password: string
 ): Promise<AuthResponse> {
   const resp = await fetch(`${API_BASE}/usuario/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tenant_id, user_id, password }),
+    body: JSON.stringify({ tenant_id, email, password }),
   });
   if (!resp.ok) throw new Error(`Sign-up failed (${resp.status})`);
   return (await resp.json()) as AuthResponse;
@@ -22,13 +22,13 @@ export async function signUp(
 
 export async function login(
   tenant_id: string,
-  user_id: string,
+  email: string,
   password: string
 ): Promise<AuthResponse> {
   const resp = await fetch(`${API_BASE}/usuario/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tenant_id, user_id, password }),
+    body: JSON.stringify({ tenant_id, email, password }),
   });
   if (!resp.ok) throw new Error(`Login failed (${resp.status})`);
   return (await resp.json()) as AuthResponse;

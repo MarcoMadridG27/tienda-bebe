@@ -40,19 +40,16 @@ export const useProductService = () => {
 
     const getProducts = async (): Promise<Product[]> => {
     if (!token || !tenantId) throw new Error('No autenticado')
-
+    console.info(token)
     const resp = await fetch(`${API_BASE}/producto/listar`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization:   `Bearer ${token}`,
+      
+        Authorization:   `${token}`
       },
-      body: JSON.stringify({ tenant_id: tenantId }),
+      body: JSON.stringify({ tenant_id: tenantId,limit :5}),
     })
-    if (!resp.ok) {
-      const err = await resp.text()
-      throw new Error(err || `Error ${resp.status}`)
-    }
+  
     const data = await resp.json()
     const raw: any[] = data.productos || []
 

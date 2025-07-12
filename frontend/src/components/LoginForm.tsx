@@ -13,7 +13,7 @@ const LoginForm: React.FC = () => {
     setError(null);
     try {
       const { token, tenant_id } = await login(
-        import.meta.env.VITE_TENANT_ID || 'tenant3',
+        import.meta.env.VITE_TENANT_ID || 'tenant123',
         userId,
         password
       );

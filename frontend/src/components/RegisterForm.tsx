@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { signUp } from '../services/authService';
 
 const RegisterForm: React.FC = () => {
-  const tenantId = import.meta.env.VITE_TENANT_ID || 'tenant3';
+  const tenantId = import.meta.env.VITE_TENANT_ID || 'tenant123';
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
