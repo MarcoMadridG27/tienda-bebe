@@ -1,7 +1,6 @@
 import { Product } from '../types/Product';
 import { useAuth } from '../contexts/AuthContext';
 
-import { API_BASE } from './api';
 export interface ProductPayload {
   tenant_id: string;
   producto_id: string;
@@ -16,6 +15,8 @@ export interface ProductPayload {
   imageUrl: string;
 }
 export const useProductService = () => {
+    const API_BASE='https://5gwvouuuia.execute-api.us-east-1.amazonaws.com/dev'
+
     const { token, tenantId } = useAuth();
 
     const authHeaders = () => ({
@@ -30,7 +31,7 @@ export const useProductService = () => {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
             },
             body: JSON.stringify(payload),
         });
